@@ -113,7 +113,7 @@ else:
                     / "jupyter"
                     / f"{_video_hash(local_path)}{local_path.suffix}"
                 )
-
+                print(tmpfile)
                 if local_path in self.rendered_files:
                     self.rendered_files[local_path].unlink()
                 self.rendered_files[local_path] = tmpfile
