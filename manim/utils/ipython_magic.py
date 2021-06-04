@@ -31,6 +31,7 @@ else:
         @needs_local_scope
         @line_cell_magic
         def manim(self, line, cell=None, local_ns=None):
+            print("cell magic now!!")
             r"""Render Manim scenes contained in IPython cells.
             Works as a line or cell magic.
 
@@ -114,6 +115,7 @@ else:
                     / f"{_video_hash(local_path)}{local_path.suffix}"
                 )
                 print(tmpfile)
+                print("hoooo")
                 if local_path in self.rendered_files:
                     self.rendered_files[local_path].unlink()
                 self.rendered_files[local_path] = tmpfile
@@ -127,14 +129,8 @@ else:
 
                 # videos need to be embedded when running in google colab
                 video_embed = "google.colab" in str(get_ipython())
-
-                display(
-                    Video(
-                        tmpfile,
-                        html_attributes=f'controls autoplay loop style="max-width: {config["media_width"]};"',
-                        embed=video_embed,
-                    )
-                )
+                print("filename is ", config["output_file"])
+                display(Video(config["output_file"], width=600, embed=True))
 
 
 def _video_hash(path):
