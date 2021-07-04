@@ -59,6 +59,10 @@ __all__ = [
     "Cutout",
     "Angle",
     "RightAngle",
+    "ArrowCircleFilledTip",
+    "ArrowCircleTip",
+    "ArrowSquareTip",
+    "ArrowSquareFilledTip",
 ]
 
 import math
@@ -263,7 +267,19 @@ class TipableVMobject(VMobject, metaclass=ConvertToOpenGL):
 
 
 class Arc(TipableVMobject):
-    """A circular arc."""
+    """A circular arc.
+
+    Examples
+    --------
+    A simple arc of angle Pi.
+
+    .. manim:: ArcExample
+        :save_last_frame:
+
+        class ArcExample(Scene):
+            def construct(self):
+                self.add(Arc(angle=PI))
+    """
 
     def __init__(
         self,
@@ -383,6 +399,21 @@ class Arc(TipableVMobject):
 class ArcBetweenPoints(Arc):
     """
     Inherits from Arc and additionally takes 2 points between which the arc is spanned.
+
+    Example
+    --------------------
+    .. manim:: ArcBetweenPointsExample
+
+      class ArcBetweenPointsExample(Scene):
+          def construct(self):
+              circle = Circle(radius=2, stroke_color=GREY)
+              dot_1 = Dot(color=GREEN).move_to([2, 0, 0]).scale(0.5)
+              dot_1_text = Tex("(2,0)").scale(0.5).next_to(dot_1, RIGHT).set_color(BLUE)
+              dot_2 = Dot(color=GREEN).move_to([0, 2, 0]).scale(0.5)
+              dot_2_text = Tex("(0,2)").scale(0.5).next_to(dot_2, UP).set_color(BLUE)
+              arc= ArcBetweenPoints(start=2 * RIGHT, end=2 * UP, stroke_color=YELLOW)
+              self.add(circle, dot_1, dot_2, dot_1_text, dot_2_text)
+              self.play(Create(arc))
     """
 
     def __init__(self, start, end, angle=TAU / 4, radius=None, **kwargs):
@@ -710,6 +741,52 @@ class Ellipse(Circle):
 
 
 class AnnularSector(Arc):
+    """
+
+    Parameters
+    ----------
+    inner_radius
+       The inside radius of the Annular Sector.
+    outer_radius
+       The outside radius of the Annular Sector.
+    angle
+       The clockwise angle of the Annular Sector.
+    start_angle
+       The starting clockwise angle of the Annular Sector.
+    fill_opacity
+       The opacity of the color filled in the Annular Sector.
+    stroke_width
+       The stroke width of the Annular Sector.
+    color
+       The color filled into the Annular Sector.
+
+    Examples
+    --------
+    .. manim:: AnnularSectorExample
+        :save_last_frame:
+
+        class AnnularSectorExample(Scene):
+            def construct(self):
+                # Changes background color to clearly visualize changes in fill_opacity.
+                self.camera.background_color = WHITE
+
+                # The default parameter start_angle is 0, so the AnnularSector starts from the +x-axis.
+                s1 = AnnularSector(color=YELLOW).move_to(2 * UL)
+
+                # Different inner_radius and outer_radius than the default.
+                s2 = AnnularSector(inner_radius=1.5, outer_radius=2, angle=45 * DEGREES, color=RED).move_to(2 * UR)
+
+                # fill_opacity is typically a number > 0 and <= 1. If fill_opacity=0, the AnnularSector is transparent.
+                s3 = AnnularSector(inner_radius=1, outer_radius=1.5, angle=PI, fill_opacity=0.25, color=BLUE).move_to(2 * DL)
+
+                # With a negative value for the angle, the AnnularSector is drawn clockwise from the start value.
+                s4 = AnnularSector(inner_radius=1, outer_radius=1.5, angle=-3 * PI / 2, color=GREEN).move_to(2 * DR)
+
+                self.add(s1, s2, s3, s4)
+
+
+    """
+
     def __init__(
         self,
         inner_radius=1,
@@ -752,6 +829,23 @@ class AnnularSector(Arc):
 
 
 class Sector(AnnularSector):
+    """
+
+    Examples
+    --------
+
+    .. manim:: ExampleSector
+        :save_last_frame:
+
+        class ExampleSector(Scene):
+            def construct(self):
+                sector = Sector(outer_radius=2, inner_radius=1)
+                sector2 = Sector(outer_radius=2.5, inner_radius=0.8).move_to([-3, 0, 0])
+                sector.set_color(RED)
+                sector2.set_color(PINK)
+                self.add(sector, sector2)
+    """
+
     def __init__(self, outer_radius=1, inner_radius=0, **kwargs):
         super().__init__(inner_radius=inner_radius, outer_radius=outer_radius, **kwargs)
 
@@ -1220,6 +1314,46 @@ class Arrow(Line):
 
                 self.add(Group(g1, g2, g3).arrange(buff=2))
 
+
+    .. manim:: ArrowExample
+        :save_last_frame:
+
+        class ArrowExample(Scene):
+            def construct(self):
+                left_group = VGroup()
+                # As buff increases, the size of the arrow decreases.
+                for buff in np.arange(0, 2.2, 0.45):
+                    left_group += Arrow(buff=buff, start=2 * LEFT, end=2 * RIGHT)
+                # Required to arrange arrows.
+                left_group.arrange(DOWN)
+                left_group.move_to(4 * LEFT)
+
+                middle_group = VGroup()
+                # As max_stroke_width_to_length_ratio gets bigger,
+                # the width of stroke increases.
+                for i in np.arange(0, 5, 0.5):
+                    middle_group += Arrow(max_stroke_width_to_length_ratio=i)
+                middle_group.arrange(DOWN)
+
+                UR_group = VGroup()
+                # As max_tip_length_to_length_ratio increases,
+                # the length of the tip increases.
+                for i in np.arange(0, 0.3, 0.1):
+                    UR_group += Arrow(max_tip_length_to_length_ratio=i)
+                UR_group.arrange(DOWN)
+                UR_group.move_to(4 * RIGHT + 2 * UP)
+
+                DR_group = VGroup()
+                DR_group += Arrow(start=LEFT, end=RIGHT, color=BLUE, tip_shape=ArrowSquareTip)
+                DR_group += Arrow(start=LEFT, end=RIGHT, color=BLUE, tip_shape=ArrowSquareFilledTip)
+                DR_group += Arrow(start=LEFT, end=RIGHT, color=YELLOW, tip_shape=ArrowCircleTip)
+                DR_group += Arrow(start=LEFT, end=RIGHT, color=YELLOW, tip_shape=ArrowCircleFilledTip)
+                DR_group.arrange(DOWN)
+                DR_group.move_to(4 * RIGHT + 2 * DOWN)
+
+                self.add(left_group, middle_group, UR_group, DR_group)
+
+
     See Also
     --------
     :class:`ArrowTip`
@@ -1456,6 +1590,21 @@ class DoubleArrow(Arrow):
                 group = Group(Group(circle, d_arrow), d_arrow_2).arrange(UP, buff=1)
                 self.add(group)
 
+
+    .. manim:: DoubleArrowExample2
+        :save_last_frame:
+
+        class DoubleArrowExample2(Scene):
+            def construct(self):
+                box = Square()
+                p1 = box.get_left()
+                p2 = box.get_right()
+                d1 = DoubleArrow(p1, p2, buff=0)
+                d2 = DoubleArrow(p1, p2, buff=0, tip_length=0.2, color=YELLOW)
+                d3 = DoubleArrow(p1, p2, buff=0, tip_length=0.4, color=BLUE)
+                Group(d1, d2, d3).arrange(DOWN)
+                self.add(box, d1, d2, d3)
+
     See Also
     --------
     :class:`ArrowTip`
@@ -1539,9 +1688,7 @@ class Polygram(VMobject, metaclass=ConvertToOpenGL):
         super().__init__(color=color, **kwargs)
 
         for vertices in vertex_groups:
-            # Allow any iterable to be passed
-            vertices = iter(vertices)
-            first_vertex = next(vertices)
+            first_vertex, *vertices = vertices
             first_vertex = np.array(first_vertex)
 
             self.start_new_path(first_vertex)
@@ -2374,9 +2521,8 @@ class ArrowTip(VMobject, metaclass=ConvertToOpenGL):
     .. manim:: CustomTipExample
 
         >>> class MyCustomArrowTip(ArrowTip, RegularPolygon):
-        ...     def __init__(self, **kwargs):
+        ...     def __init__(self, length=0.35, **kwargs):
         ...         RegularPolygon.__init__(self, n=5, **kwargs)
-        ...         length = 0.35
         ...         self.width = length
         ...         self.stretch_to_fit_height(length)
         >>> arr = Arrow(np.array([-2, -2, 0]), np.array([2, 2, 0]),
@@ -2826,8 +2972,8 @@ class Angle(VMobject, metaclass=ConvertToOpenGL):
                 right_dot = Dot(ORIGIN, radius=dot_radius, color=dot_color)
                 dot_anchor = (
                     inter
-                    + (self.get_center() - inter)
-                    / np.linalg.norm(self.get_center() - inter)
+                    + (angle_mobject.get_center() - inter)
+                    / np.linalg.norm(angle_mobject.get_center() - inter)
                     * radius
                     * dot_distance
                 )
