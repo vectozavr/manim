@@ -42,6 +42,7 @@ from .animation.indication import *
 from .animation.movement import *
 from .animation.numbers import *
 from .animation.rotation import *
+from .animation.specialized import *
 from .animation.transform import *
 from .animation.transform_matching_parts import *
 from .animation.update import *
@@ -73,6 +74,7 @@ from .mobject.svg.svg_mobject import *
 from .mobject.svg.svg_path import *
 from .mobject.svg.tex_mobject import *
 from .mobject.svg.text_mobject import *
+from .mobject.table import *
 from .mobject.three_d_utils import *
 from .mobject.three_dimensions import *
 from .mobject.types.image_mobject import *
@@ -81,7 +83,6 @@ from .mobject.types.vectorized_mobject import *
 from .mobject.value_tracker import *
 from .mobject.vector_field import *
 from .renderer.cairo_renderer import *
-from .scene.graph_scene import *
 from .scene.moving_camera_scene import *
 from .scene.reconfigurable_scene import *
 from .scene.sample_space_scene import *

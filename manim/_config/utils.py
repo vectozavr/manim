@@ -244,6 +244,7 @@ class ManimConfig(MutableMapping):
         "background_opacity",
         "custom_folders",
         "disable_caching",
+        "disable_caching_warning",
         "ffmpeg_loglevel",
         "format",
         "flush_cache",
@@ -268,7 +269,6 @@ class ManimConfig(MutableMapping):
         "pixel_height",
         "pixel_width",
         "plugins",
-        "png_mode",
         "preview",
         "progress_bar",
         "save_as_gif",
@@ -291,6 +291,7 @@ class ManimConfig(MutableMapping):
         "video_dir",
         "fullscreen",
         "window_position",
+        "window_size",
         "window_monitor",
         "write_all",
         "write_to_movie",
@@ -519,6 +520,7 @@ class ManimConfig(MutableMapping):
             "show_in_file_browser",
             "log_to_file",
             "disable_caching",
+            "disable_caching_warning",
             "flush_cache",
             "custom_folders",
             "use_opengl_renderer",
@@ -555,7 +557,6 @@ class ManimConfig(MutableMapping):
             "partial_movie_dir",
             "input_file",
             "output_file",
-            "png_mode",
             "movie_file_extension",
             "background_color",
             "renderer",
@@ -577,6 +578,13 @@ class ManimConfig(MutableMapping):
         # tuple keys
         gui_location = tuple(map(int, re.split(";|,|-", parser["CLI"]["gui_location"])))
         setattr(self, "gui_location", gui_location)
+
+        window_size = parser["CLI"][
+            "window_size"
+        ]  # if not "default", get a tuple of the position
+        if window_size != "default":
+            window_size = tuple(map(int, re.split(";|,|-", window_size)))
+        setattr(self, "window_size", window_size)
 
         # plugins
         self.plugins = parser["CLI"].get("plugins", fallback="", raw=True).split(",")
@@ -745,7 +753,8 @@ class ManimConfig(MutableMapping):
                 self["write_to_movie"] = False
 
         # Handle --gui_location flag.
-        self.gui_location = args.gui_location
+        if getattr(args, "gui_location") is not None:
+            self.gui_location = args.gui_location
 
         return self
 
@@ -1022,10 +1031,10 @@ class ManimConfig(MutableMapping):
         doc="Whether to use scene caching.",
     )
 
-    png_mode = property(
-        lambda self: self._d["png_mode"],
-        lambda self, val: self._set_from_list("png_mode", val, ["RGB", "RGBA"]),
-        doc="Either RGA (no transparency) or RGBA (with transparency) (no flag).",
+    disable_caching_warning = property(
+        lambda self: self._d["disable_caching_warning"],
+        lambda self, val: self._set_boolean("disable_caching_warning", val),
+        doc="Whether a warning is raised if there are too much submobjects to hash.",
     )
 
     movie_file_extension = property(
@@ -1077,12 +1086,7 @@ class ManimConfig(MutableMapping):
 
     @transparent.setter
     def transparent(self, val: bool) -> None:
-        if val:
-            self.png_mode = "RGBA"
-            self.background_opacity = 0.0
-        else:
-            self.png_mode = "RGB"
-            self.background_opacity = 1.0
+        self._d["background_opacity"] = float(not val)
         self.resolve_movie_file_extension(val)
 
     @property
@@ -1173,6 +1177,12 @@ class ManimConfig(MutableMapping):
         lambda self: self._d["window_position"],
         lambda self, val: self._d.__setitem__("window_position", val),
         doc="Set the position of preview window. You can use directions, e.g. UL/DR/ORIGIN/LEFT...or the position(pixel) of the upper left corner of the window, e.g. '960,540'",
+    )
+
+    window_size = property(
+        lambda self: self._d["window_size"],
+        lambda self, val: self._d.__setitem__("window_size", val),
+        doc="The size of the opengl window. 'default' to automatically scale the window based on the display monitor.",
     )
 
     def resolve_movie_file_extension(self, is_transparent):
