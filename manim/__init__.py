@@ -1,13 +1,9 @@
 #!/usr/bin/env python
 
-# flake8: noqa
 
-try:
-    import importlib.metadata as importlib_metadata
-except ModuleNotFoundError:
-    import importlib_metadata
+import pkg_resources
 
-__version__ = importlib_metadata.version(__name__)
+__version__ = pkg_resources.get_distribution(__name__).version
 
 
 import sys
@@ -77,7 +73,9 @@ from .mobject.svg.text_mobject import *
 from .mobject.table import *
 from .mobject.three_d_utils import *
 from .mobject.three_dimensions import *
+from .mobject.types.dot_cloud import *
 from .mobject.types.image_mobject import *
+from .mobject.types.opengl_point_cloud_mobject import *
 from .mobject.types.point_cloud_mobject import *
 from .mobject.types.vectorized_mobject import *
 from .mobject.value_tracker import *
