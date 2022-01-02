@@ -32,7 +32,7 @@ import numpy as np
 
 from .. import config
 from ..animation.animation import Animation
-from ..constants import DEFAULT_POINTWISE_FUNCTION_RUN_TIME, DEGREES, OUT
+from ..constants import DEFAULT_POINTWISE_FUNCTION_RUN_TIME, DEGREES, ORIGIN, OUT
 from ..mobject.mobject import Group, Mobject
 from ..mobject.opengl_mobject import OpenGLGroup, OpenGLMobject
 from ..utils.paths import path_along_arc, path_along_circles
@@ -267,17 +267,27 @@ class _MethodAnimation(MoveToTarget):
 
 
 class ApplyMethod(Transform):
+    """Animates a mobject by applying a method.
+
+    Note that only the method needs to be passed to this animation,
+    it is not required to pass the corresponding mobject. Furthermore,
+    this animation class only works if the method returns the modified
+    mobject.
+
+    Parameters
+    ----------
+    method
+        The method that will be applied in the animation.
+    args
+        Any positional arguments to be passed when applying the method.
+    kwargs
+        Any keyword arguments passed to :class:`~.Transform`.
+
+    """
+
     def __init__(
         self, method: Callable, *args, **kwargs
     ) -> None:  # method typing (we want to specify Mobject method)? for args?
-        """
-        Method is a method of Mobject, ``args`` are arguments for
-        that method.  Key word arguments should be passed in
-        as the last arg, as a dict, since ``kwargs`` is for
-        configuration of the transform itself
-
-        Relies on the fact that mobject methods return the mobject
-        """
         self.check_validity_of_input(method)
         self.method = method
         self.method_args = args
@@ -381,11 +391,31 @@ class ApplyFunction(Transform):
 
 
 class ApplyMatrix(ApplyPointwiseFunction):
-    def __init__(self, matrix: np.ndarray, mobject: Mobject, **kwargs) -> None:
+    """Applies a matrix transform to an mobject.
+
+    Parameters
+    ----------
+    matrix
+        The transformation matrix.
+    mobject
+        The :class:`~.Mobject`.
+    about_point
+        The origin point for the transform. Defaults to ``ORIGIN``.
+    kwargs
+        Further keyword arguments that are passed to :class:`ApplyPointwiseFunction`.
+    """
+
+    def __init__(
+        self,
+        matrix: np.ndarray,
+        mobject: Mobject,
+        about_point: np.ndarray = ORIGIN,
+        **kwargs,
+    ) -> None:
         matrix = self.initialize_matrix(matrix)
 
         def func(p):
-            return np.dot(p, matrix.T)
+            return np.dot(p - about_point, matrix.T) + about_point
 
         super().__init__(func, mobject, **kwargs)
 
